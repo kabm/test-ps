@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:; connect-src 'self' data: blob:; worker-src 'self' blob:">
+  <title>Lumen Studio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <header id="menubar">
+      <div class="brand" title="Lumen Studio"><img src="assets/icon.png" alt="" width="20" height="20"><span>Lumen</span></div>
+      <nav id="menus"></nav>
+      <div class="spacer"></div>
+      <div id="modules" role="tablist">
+        <button data-module="library" title="Library (Ctrl+Alt+1)">Library</button>
+        <button data-module="develop" title="Develop (Ctrl+Alt+2)">Develop</button>
+        <button data-module="edit" title="Edit (Ctrl+Alt+3)">Edit</button>
+      </div>
+    </header>
+    <div id="optionsbar"></div>
+    <main id="workspace">
+      <aside id="left" class="panel-col"></aside>
+      <section id="center">
+        <div id="tabs"></div>
+        <div id="stage">
+          <div id="viewport"></div>
+          <div id="library-view"></div>
+          <div id="empty-state"></div>
+          <div id="busy"><div class="spinner"></div><span></span></div>
+        </div>
+        <div id="filmstrip"></div>
+      </section>
+      <aside id="right" class="panel-col"></aside>
+    </main>
+    <footer id="statusbar"></footer>
+  </div>
+  <div id="modal-root"></div>
+  <div id="toast"></div>
+  <div id="drop-overlay"><div>Drop photos to import</div></div>
+  <script src="bundle/app.js"></script>
+</body>
+</html>

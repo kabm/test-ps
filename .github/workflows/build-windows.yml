@@ -1,0 +1,73 @@
+name: Build Windows installer
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npx playwright-core install --with-deps chromium
+      - run: npm run build:renderer
+      - name: UI scenario (headless Chromium)
+        run: node test/ui/scenario.mjs
+      - name: Pixel accuracy checks
+        run: node test/ui/pixels.mjs
+      - name: Electron app checks
+        run: xvfb-run -a node test/ui/electron-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-screenshots
+          path: test/ui/output/*.png
+          retention-days: 14
+
+  windows:
+    runs-on: windows-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build installer
+        run: |
+          node scripts/build-renderer.mjs --minify
+          npx electron-builder --win --x64 --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Smoke-test the packaged app on Windows
+        run: node test/ui/packaged-smoke.mjs dist/win-unpacked/LumenStudio.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lumen-Studio-Windows-Installer
+          path: dist/Lumen-Studio-Setup-*.exe
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-smoke-screenshot
+          path: test/ui/output/*.png
+          retention-days: 14
+      - name: Publish GitHub release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Lumen-Studio-Setup-*.exe
+          generate_release_notes: true
